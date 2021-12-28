@@ -1,0 +1,15 @@
+version: "3.5"
+
+services:
+  test-ivashin-postgresql:
+    image: postgres
+    container_name: test-ivashin-postgresql
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    volumes:
+      - D:\Programming\databases\postgres\test-ivashin:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=root #postgres root password
+      - POSTGRES_USER=root #postgres login of root user
+      - POSTGRES_DB=test-ivashin #postgres login of root use
