@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Patch, Post, Query } from '@nestjs/common';
 import { CreateUserDto } from './dto/createUser.dto';
 import { UpdateUserDto } from './dto/updateUser.dto';
-import { User } from './interfaces/user.interface';
+import { User } from './user.entity';
 import { UserService } from './user.service';
 
 @Controller('user')
@@ -28,7 +28,7 @@ export class UserController {
 
   @Patch()
   @HttpCode(HttpStatus.OK)
-  async update(@Body() updateUser: UpdateUserDto): Promise<User> {
+  async update(@Body() updateUser: UpdateUserDto) {
     return this.userService.update(updateUser);
   }
 }

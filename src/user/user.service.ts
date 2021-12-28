@@ -1,72 +1,62 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from './dto/createUser.dto';
 import { UpdateUserDto } from './dto/updateUser.dto';
-import { User } from './interfaces/user.interface';
+import { ICreateUser } from './interfaces/createUser.interface';
+import { IUpdateUser } from './interfaces/updateUser.interface';
+import { User } from './user.entity';
+import { UserRepository } from './user.repository';
 
 @Injectable()
 export class UserService {
-  private users: User[] = [];
+  constructor(
+    @InjectRepository(UserRepository)
+    private userRepository: UserRepository
+  ) {}
   
-  create(createUser: CreateUserDto) {
-    const user: User = {
+  async create(createUser: CreateUserDto) {
+    const user: ICreateUser = {
       email: createUser.email,
       firstName: createUser.firstName,
       lastName: createUser.lastName,
-      image: '',
-      pdf: '',
     }
 
-    this.users.push(user);
-    return user;
+    return await this.userRepository.create(user).save();
   }
 
-  findOne(email: string): User {
-    const user: User = this.users.find(item => item.email == email);
-
-    if(!user) {
-      throw new NotFoundException("User not found");
-    }
-
-    return user;
-  }
-
-  delete(email: string) {
-    let i: number;
-    const user = this.users.find((item, index) => {
-      if(item.email == email) {
-        i = index;
-        return true;
-      }
+  async findOne(email: string): Promise<User> {
+    const user = await this.userRepository.findOne({
+      email
     });
 
     if(!user) {
       throw new NotFoundException("User not found");
     }
 
-    this.users.splice(i, 1);
-  }
-
-  update(updateUser: UpdateUserDto) {
-    let user: User;
-
-    for(let i = 0; i < this.users.length; i++) {
-      if(this.users[i].email != updateUser.email) {
-        continue;
-      }
-
-      for (const key in updateUser) {
-        if (Object.prototype.hasOwnProperty.call(updateUser, key)) {
-          const value = updateUser[key];
-          this.users[i][key] = value;
-        }
-      }
-
-      user = this.users[i];
-      break;
-    }
-
     return user;
   }
+
+  async delete(email: string) {
+    await this.userRepository.delete({
+      email
+    });
+  }
+
+  async update(updateUser: UpdateUserDto) {
+    const { email, ...rest } = updateUser;
+    const user = await this.userRepository.findOne({email});
+
+    if(!user) {
+      throw new NotFoundException("User not found");
+    }
+
+    for (const key in rest) {
+      if (Object.prototype.hasOwnProperty.call(rest, key)) {
+        const value = rest[key];
+        user[key] = value;
+      }
+    }
+
+    return await user.save();
+  }
 }
-
-

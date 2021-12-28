@@ -1,7 +1,5 @@
-export interface User {
+export interface ICreateUser {
   email: string;
   firstName: string;
   lastName: string;
-  image: string;
-  pdf: string;
 }
