@@ -4,6 +4,9 @@ import { ICreateUser } from './interfaces/createUser.interface';
 import { IUpdateUser } from './interfaces/updateUser.interface';
 import { User } from './user.entity';
 import { UserRepository } from './user.repository';
+import * as fs from "fs";
+import * as path from "path";
+import cryptoRandomString = require('crypto-random-string');
 
 @Injectable()
 export class UserService {
@@ -58,5 +61,43 @@ export class UserService {
     }
 
     return await user.save();
+  }
+
+  async uploadImage(file: Express.Multer.File, email: string) {
+    const user = await this.userRepository.findOne({
+      email
+    });
+
+    if(!user) {
+      throw new NotFoundException("User not found");
+    }
+    const originalFileName = file.originalname;
+    const fileExtension = this.fileExtansionMap(originalFileName);
+    const fileName = cryptoRandomString({length: 30, type: 'hex'});
+    const filepath = path.resolve(`${process.cwd()}/static/${fileName}.${fileExtension}`);
+    
+    fs.writeFile(filepath, file.buffer, async (error) => {
+      if (error) {
+        return;
+      }
+      user.image = filepath;
+      await user.save();
+    });   
+  }
+
+  private fileExtansionMap(fileName: string): string {
+    const alowedFileExtansions = [
+      "png",
+      "jpeg",
+      "jpg"
+    ]
+
+    for (const fileExtansion of alowedFileExtansions) {
+      if (fileName.endsWith(fileExtansion)) {
+        return fileExtansion;
+      }
+    }
+
+    return "jpeg";
   }
 }

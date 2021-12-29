@@ -1,4 +1,6 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Patch, Post, Query, UsePipes } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Patch, Post, Query, UploadedFile, UseInterceptors, UsePipes } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { userImageValid } from 'src/utils/validations/userImage';
 //import { CreateUserDto } from './dto/createUser.dto';
 import { UpdateUserDto } from './dto/updateUser.dto';
 import { ICreateUser } from './interfaces/createUser.interface';
@@ -7,6 +9,7 @@ import { CreateUserPipe } from './pipes/createUser.pipe';
 import { DeleteUserPipe } from './pipes/deleteUser.pipe';
 import { FindUserPipe } from './pipes/findUser.pipe';
 import { UpdateUserPipe } from './pipes/updateUser.pipe';
+import { UploadImagePipe } from './pipes/uploadImage.pipe';
 import { User } from './user.entity';
 import { UserService } from './user.service';
 
@@ -41,4 +44,20 @@ export class UserController {
   async update(@Body() updateUser: IUpdateUser) {
     return this.userService.update(updateUser);
   }
+
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('file', {
+    limits: {
+      fileSize: 172000
+    },
+    fileFilter: userImageValid,
+  }))
+  @UsePipes(UploadImagePipe)
+  @HttpCode(HttpStatus.OK)
+  async uploadFile(
+    @UploadedFile() file: Express.Multer.File,
+    @Body('email') email: string
+    ) {
+    await this.userService.uploadImage(file, email);
+  } 
 }

@@ -13,4 +13,8 @@ export class User extends BaseEntity {
   firstName: string;
   @Column()
   lastName: string;
+  @Column({
+    nullable: true
+  })
+  image?: string;
 }
