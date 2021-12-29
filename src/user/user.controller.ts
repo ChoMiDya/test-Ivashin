@@ -3,6 +3,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { userImageValid } from 'src/utils/validations/userImage';
 //import { CreateUserDto } from './dto/createUser.dto';
 import { UpdateUserDto } from './dto/updateUser.dto';
+import { UserDto } from './dto/user.dto';
 import { ICreateUser } from './interfaces/createUser.interface';
 import { IUpdateUser } from './interfaces/updateUser.interface';
 import { CreateUserPipe } from './pipes/createUser.pipe';
@@ -28,7 +29,7 @@ export class UserController {
   @Get()
   @UsePipes(FindUserPipe)
   @HttpCode(HttpStatus.OK)
-  async findOne(@Query('email') email: string): Promise<User> {
+  async findOne(@Query('email') email: string): Promise<UserDto> {
     return this.userService.findOne(email);
   } 
 

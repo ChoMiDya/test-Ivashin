@@ -8,6 +8,7 @@ import * as fs from "fs";
 import * as path from "path";
 import cryptoRandomString = require('crypto-random-string');
 import PDFDocument = require("pdfkit");
+import { UserDto } from './dto/user.dto';
 
 @Injectable()
 export class UserService {
@@ -25,10 +26,12 @@ export class UserService {
       throw new HttpException('User already exsists', 409);
     }
 
-    return await this.userRepository.create(createUser).save();
+    const newUser = await this.userRepository.create(createUser).save();
+
+    return new UserDto(newUser);
   }
 
-  async findOne(email: string): Promise<User> {
+  async findOne(email: string): Promise<UserDto> {
     const user = await this.userRepository.findOne({
       email
     });
@@ -37,7 +40,7 @@ export class UserService {
       throw new NotFoundException("User not found");
     }
 
-    return user;
+    return new UserDto(user);
   }
 
   async delete(email: string) {
@@ -61,7 +64,9 @@ export class UserService {
       }
     }
 
-    return await user.save();
+    const savedUser = await user.save();
+
+    return new UserDto(savedUser);
   }
 
   async uploadImage(file: Express.Multer.File, email: string) {
@@ -101,12 +106,16 @@ export class UserService {
     let buffers = [];
 
     doc.on('data', buffers.push.bind(buffers));
-    const result = new Promise<void>((resolve, reject) => {
+    const result = new Promise<boolean>((resolve) => {
       doc.on('end', async () => {
         const pdfData = Buffer.concat(buffers);
         user.pdf = pdfData;
         await user.save();
-        resolve();
+        resolve(true);
+      });
+
+      doc.on('error', async () => {
+        resolve(false);
       });
     });
     
@@ -118,18 +127,19 @@ export class UserService {
     doc
     .text(`Фамилия: ${user.lastName}`, 50, 100);
 
-    doc
-    .text("Фото:", 50, 150);
-
-    doc.image(user.image, 0, 200, {
-      fit: [250, 300],
-      align: 'center',
-      valign: 'center',
-    });
+    if (user.image) {
+      doc
+      .text("Фото:", 50, 150);
+  
+      doc.image(user.image, 0, 200, {
+        fit: [250, 300],
+        align: 'center',
+        valign: 'center',
+      });
+    }
 
     doc.end();
-    await result;
-    return true;
+    return await result;
   }
 
   private fileExtansionMap(fileName: string): string {
