@@ -4,7 +4,9 @@ import { BaseEntity, Column, Entity, Index, PrimaryGeneratedColumn } from "typeo
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
-  @Column()
+  @Column({
+    unique: true
+  })
   @Index()
   email: string;
   @Column()
