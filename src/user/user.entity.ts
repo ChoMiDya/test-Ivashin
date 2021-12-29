@@ -17,4 +17,9 @@ export class User extends BaseEntity {
     nullable: true
   })
   image?: string;
+  @Column({
+    nullable: true,
+    type: "bytea"
+  })
+  pdf?: Buffer;
 }

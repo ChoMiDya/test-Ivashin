@@ -8,6 +8,7 @@ import { IUpdateUser } from './interfaces/updateUser.interface';
 import { CreateUserPipe } from './pipes/createUser.pipe';
 import { DeleteUserPipe } from './pipes/deleteUser.pipe';
 import { FindUserPipe } from './pipes/findUser.pipe';
+import { GeneratePdfPipe } from './pipes/generatePdf.pipe';
 import { UpdateUserPipe } from './pipes/updateUser.pipe';
 import { UploadImagePipe } from './pipes/uploadImage.pipe';
 import { User } from './user.entity';
@@ -59,5 +60,12 @@ export class UserController {
     @Body('email') email: string
     ) {
     await this.userService.uploadImage(file, email);
-  } 
+  }
+
+  @Post("pdf")
+  @UsePipes(GeneratePdfPipe)
+  @HttpCode(HttpStatus.OK)
+  async generatePdf(@Body('email') email: string) {
+    return await this.userService.generatePdf(email);
+  }
 }

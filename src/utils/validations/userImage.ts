@@ -29,7 +29,6 @@ export function userImageValid(req, file: MulterFile, callback: (error: Error | 
     callback(new BadRequestException("File is not image"), false);
     return;
   }
-  console.log(mimetype)
 
   if (
     !mimetype.endsWith("png") &&
